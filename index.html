@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#10131d">
+    <meta name="description" content="TaskFlow \membantu mengatur tugas dan prioritas harian.">
+    <title>TaskFlow — Produktivitas</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+</head>
+<body>
+<div class="app">
+    <aside class="sidebar">
+        <a class="brand" href="#" aria-label="TaskFlow beranda">
+            <img class="brand-logo" src="icons/icon-192.png" alt="Logo TaskFlow">
+            <span>TaskFlow</span>
+        </a>
+
+        <p class="menu-label">MENU UTAMA</p>
+        <nav class="navigation" aria-label="Navigasi utama">
+            <button class="nav-item active" type="button" data-view="tasks">
+                <span class="nav-icon">▦</span> Semua Tugas
+                <span class="nav-count" id="sidebarTaskCount">0</span>
+            </button>
+            <button class="nav-item" type="button" data-filter="active">
+                <span class="nav-icon">◷</span> Belum Selesai
+            </button>
+            <button class="nav-item" type="button" data-filter="completed">
+                <span class="nav-icon">✓</span> Sudah Selesai
+            </button>
+            <button class="nav-item" type="button" data-view="about">
+                <span class="nav-icon">ⓘ</span> About Me
+            </button>
+        </nav>
+
+        <div class="sidebar-bottom">
+            <div class="sidebar-note">
+                <span class="note-symbol">✦</span>
+                <p>Mulai dari satu tugas kecil. Kemajuan akan mengikuti.</p>
+            </div>
+            <div class="profile">
+                <div class="avatar">HH</div>
+                <div>
+                    <strong>Howard Hakim</strong>
+                    <small>Pengguna TaskFlow</small>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <header class="topbar">
+            <div class="mobile-brand">
+                <img class="brand-logo" src="icons/icon-192.png" alt="">
+                <strong>TaskFlow</strong>
+            </div>
+            <div class="breadcrumb">Workspace <span>/</span> <span id="breadcrumbCurrent">Semua Tugas</span></div>
+            <div class="local-badge"><span class="status-dot"></span>Tersimpan di perangkat</div>
+        </header>
+
+        <div class="content">
+            <section id="tasksView">
+                <div class="welcome-row">
+                    <div>
+                        <p class="eyebrow" id="todayLabel">HARI INI</p>
+                        <h1 id="greeting">Selamat datang.</h1>
+                        <p class="subtitle">Atur prioritasmu dan selesaikan satu per satu.</p>
+                    </div>
+                    <button class="primary-button" id="openTaskModal" type="button"><span>+</span> Tambah Tugas</button>
+                </div>
+
+                <section class="stats-grid" aria-label="Ringkasan tugas">
+                    <article class="stat-card">
+                        <div class="stat-top"><span class="stat-label">Total Tugas</span><span class="stat-icon purple">▦</span></div>
+                        <div class="stat-number" id="totalCount">0</div>
+                        <p class="stat-description">Semua tugas yang tercatat</p>
+                    </article>
+                    <article class="stat-card">
+                        <div class="stat-top"><span class="stat-label">Belum Selesai</span><span class="stat-icon orange">◷</span></div>
+                        <div class="stat-number" id="activeCount">0</div>
+                        <p class="stat-description">Tugas yang masih dikerjakan</p>
+                    </article>
+                    <article class="stat-card">
+                        <div class="stat-top"><span class="stat-label">Sudah Selesai</span><span class="stat-icon green">✓</span></div>
+                        <div class="stat-number" id="completedCount">0</div>
+                        <p class="stat-description">Tugas yang telah diselesaikan</p>
+                    </article>
+                    <article class="stat-card">
+                        <div class="stat-top"><span class="stat-label">Progres</span><span class="stat-icon blue">↗</span></div>
+                        <div class="stat-number" id="progressNumber">0%</div>
+                        <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+                        <p class="stat-description">Penyelesaian seluruh tugas</p>
+                    </article>
+                </section>
+
+                <section class="task-panel">
+                    <div class="panel-header">
+                        <div>
+                            <p class="eyebrow">MANAJEMEN TUGAS</p>
+                            <h2 id="taskHeading">Semua Tugas</h2>
+                            <p class="subtitle">Semua rencana dalam satu tempat.</p>
+                        </div>
+                        <button class="secondary-button" id="resetFilter" type="button">Reset Filter</button>
+                    </div>
+
+                    <div class="task-toolbar">
+                        <label class="search-box">
+                            <span aria-hidden="true">⌕</span>
+                            <input id="searchInput" type="search" placeholder="Cari tugas..." aria-label="Cari tugas">
+                        </label>
+                        <select id="priorityFilter" aria-label="Filter berdasarkan prioritas">
+                            <option value="all">Semua Prioritas</option>
+                            <option value="high">Prioritas Tinggi</option>
+                            <option value="medium">Prioritas Sedang</option>
+                            <option value="low">Prioritas Rendah</option>
+                        </select>
+                    </div>
+
+                    <div class="task-list" id="taskList"></div>
+                    <div class="panel-footer">
+                        <span id="shownCount">0 tugas ditampilkan</span>
+                        <span>Data disimpan otomatis</span>
+                    </div>
+                </section>
+            </section>
+
+            <section class="about-panel" id="aboutView" hidden>
+                <div class="about-hero">
+                    <img class="about-logo" src="icons/icon-192.png" alt="Logo TaskFlow">
+                    <p class="eyebrow">TENTANG APLIKASI</p>
+                    <h2>TaskFlow</h2>
+                    <p>Ruang sederhana untuk mengatur tugas, waktu, dan prioritas.</p>
+                    <span class="version-badge">Personal Productivity App</span>
+                </div>
+                <article class="about-card">
+                    <h3>Tentang Pembuat</h3>
+                    <p>TaskFlow dibuat sebagai proyek produktivitas pribadi untuk membantu mencatat pekerjaan, mengatur prioritas, dan memantau progres dengan tampilan yang sederhana.</p>
+                    <div class="about-info">
+                        <span>Nama pembuat</span><strong>Howard Hakim</strong>
+                        <span>Nama aplikasi</span><strong>TaskFlow</strong>
+                        <span>Fokus</span><strong>Produktivitas dan manajemen tugas</strong>
+                    </div>
+                </article>
+                <article class="about-card about-quote">
+                    <p>“Langkah kecil yang dilakukan secara konsisten dapat membawa kita menuju hasil yang besar.”</p>
+                    <span>— TaskFlow</span>
+                </article>
+            </section>
+
+            <footer class="footer">
+                <span>TaskFlow © <span id="yearNow"></span></span>
+                <span>Dibuat untuk membantu hari menjadi lebih teratur.</span>
+            </footer>
+        </div>
+    </main>
+</div>
+
+<nav class="mobile-nav" aria-label="Navigasi HP">
+<button class="mobile-nav-item active" type="button" data-view="tasks"><span>▦</span><small>Tugas</small></button>
+<button class="mobile-nav-item" type="button" data-filter="active"><span>◷</span><small>Aktif</small></button>
+<button class="mobile-nav-item" type="button" data-filter="completed"><span>✓</span><small>Selesai</small></button>
+<button class="mobile-nav-item" type="button" data-view="about"><span>ⓘ</span><small>About Me</small></button>
+</nav>
+<div class="modal-overlay" id="taskModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal">
+        <div class="modal-header">
+            <div>
+                <p class="eyebrow">TUGAS BARU</p>
+                <h2 id="modalTitle">Tambah Tugas</h2>
+            </div>
+            <button class="close-button" id="closeTaskModal" type="button" aria-label="Tutup">×</button>
+        </div>
+
+        <form id="taskForm">
+            <label for="taskTitle">Nama tugas</label>
+            <input id="taskTitle" name="taskTitle" type="text" maxlength="100" placeholder="Contoh: Selesaikan tugas matematika" required>
+
+            <label for="taskDescription">Deskripsi (opsional)</label>
+            <textarea id="taskDescription" name="taskDescription" maxlength="500" placeholder="Tambahkan catatan singkat..."></textarea>
+
+            <div class="form-row">
+                <div>
+                    <label for="taskDate">Tenggat waktu</label>
+                    <input id="taskDate" name="taskDate" type="date">
+                </div>
+                <div>
+                    <label for="taskPriority">Prioritas</label>
+                    <select id="taskPriority" name="taskPriority">
+                        <option value="medium">Sedang</option>
+                        <option value="high">Tinggi</option>
+                        <option value="low">Rendah</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button class="secondary-button" id="cancelTask" type="button">Batal</button>
+                <button class="primary-button" type="submit">Simpan Tugas</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+    const taskList = document.getElementById("taskList");
+    const taskModal = document.getElementById("taskModal");
+    const taskForm = document.getElementById("taskForm");
+    const searchInput = document.getElementById("searchInput");
+    const priorityFilter = document.getElementById("priorityFilter");
+    const tasksView = document.getElementById("tasksView");
+    const aboutView = document.getElementById("aboutView");
+
+    let tasks = [];
+    let currentFilter = "all";
+    let currentView = "tasks";
+    let toastTimer;
+
+    try {
+        const savedTasks = localStorage.getItem("taskflow_tasks");
+        if (savedTasks) {
+            tasks = JSON.parse(savedTasks);
+            if (!Array.isArray(tasks)) tasks = [];
+        }
+    } catch (error) {
+        tasks = [];
+    }
+
+    function saveTasks() {
+        try {
+            localStorage.setItem("taskflow_tasks", JSON.stringify(tasks));
+        } catch (error) {
+            showToast("Data tidak dapat disimpan di perangkat ini.");
+        }
+    }
+
+    function showToast(message) {
+        const toast = document.getElementById("toast");
+        toast.textContent = message;
+        toast.classList.add("show");
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(function () {
+            toast.classList.remove("show");
+        }, 2400);
+    }
+
+    function formatDate(dateString) {
+        if (!dateString) return "";
+        const date = new Date(dateString + "T00:00:00");
+        if (Number.isNaN(date.getTime())) return dateString;
+        return date.toLocaleDateString("id-ID", {
+            day: "numeric",
+            month: "short",
+            year: "numeric"
+        });
+    }
+
+    function safeText(value) {
+        return String(value == null ? "" : value)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    function updateStats() {
+        const total = tasks.length;
+        const completed = tasks.filter(function (task) {
+            return task.completed;
+        }).length;
+        const active = total - completed;
+        const progress = total === 0 ? 0 : Math.round((completed / total) * 100);
+
+        document.getElementById("totalCount").textContent = total;
+        document.getElementById("activeCount").textContent = active;
+        document.getElementById("completedCount").textContent = completed;
+        document.getElementById("progressNumber").textContent = progress + "%";
+        document.getElementById("progressFill").style.width = progress + "%";
+        document.getElementById("sidebarTaskCount").textContent = total;
+    }
+
+    function renderTasks() {
+        updateStats();
+
+        const searchText = searchInput.value.trim().toLowerCase();
+        const selectedPriority = priorityFilter.value;
+
+        let filteredTasks = tasks.filter(function (task) {
+            const matchesSearch =
+                task.title.toLowerCase().includes(searchText) ||
+                (task.description || "").toLowerCase().includes(searchText);
+            const matchesPriority =
+                selectedPriority === "all" || task.priority === selectedPriority;
+            const matchesStatus =
+                currentFilter === "all" ||
+                (currentFilter === "active" && !task.completed) ||
+                (currentFilter === "completed" && task.completed);
+
+            return matchesSearch && matchesPriority && matchesStatus;
+        });
+
+        filteredTasks.sort(function (a, b) {
+            if (a.completed !== b.completed) return a.completed ? 1 : -1;
+            if (a.date && b.date) return a.date.localeCompare(b.date);
+            if (a.date) return -1;
+            if (b.date) return 1;
+            return b.createdAt - a.createdAt;
+        });
+
+        document.getElementById("shownCount").textContent =
+            filteredTasks.length + " tugas ditampilkan";
+
+        if (filteredTasks.length === 0) {
+            let title = "Belum ada tugas";
+            let description = "Tambahkan tugas baru untuk memulai.";
+
+            if (tasks.length > 0) {
+                title = "Tugas tidak ditemukan";
+                description = "Coba ubah kata pencarian atau filter.";
+            }
+
+            taskList.innerHTML =
+                '<div class="empty-state">' +
+                '<div class="empty-symbol">—</div>' +
+                '<h3>' + title + '</h3>' +
+                '<p>' + description + '</p>' +
+                '</div>';
+            return;
+        }
+
+        taskList.innerHTML = filteredTasks.map(function (task) {
+            let priorityLabel = "Sedang";
+            if (task.priority === "high") priorityLabel = "Tinggi";
+            if (task.priority === "low") priorityLabel = "Rendah";
+
+            const dateLabel = task.date
+                ? '<span class="task-date">Tenggat: ' + safeText(formatDate(task.date)) + '</span>'
+                : "";
+
+            const completedLabel = task.completed
+                ? '<span class="completed-badge">Selesai</span>'
+                : "";
+
+            return '<article class="task-item ' + (task.completed ? "is-completed" : "") + '">' +
+                '<input class="task-check" type="checkbox" aria-label="Tandai tugas selesai" data-action="toggle" data-id="' + safeText(task.id) + '" ' + (task.completed ? "checked" : "") + '>' +
+                '<div class="task-info">' +
+                    '<div class="task-title">' + safeText(task.title) + '</div>' +
+                    (task.description ? '<div class="task-description">' + safeText(task.description) + '</div>' : '') +
+                    '<div class="task-meta">' +
+                        dateLabel +
+                        '<span class="priority-badge ' + safeText(task.priority) + '">' + priorityLabel + '</span>' +
+                        completedLabel +
+                    '</div>' +
+                '</div>' +
+                '<button class="delete-button" type="button" aria-label="Hapus tugas" title="Hapus tugas" data-action="delete" data-id="' + safeText(task.id) + '">×</button>' +
+            '</article>';
+        }).join("");
+    }
+
+    function openModal() {
+        taskModal.classList.add("show");
+        document.getElementById("taskTitle").focus();
+    }
+
+    function closeModal() {
+        taskModal.classList.remove("show");
+        taskForm.reset();
+    }
+
+    document.getElementById("openTaskModal").addEventListener("click", openModal);
+    document.getElementById("closeTaskModal").addEventListener("click", closeModal);
+    document.getElementById("cancelTask").addEventListener("click", closeModal);
+
+    taskModal.addEventListener("click", function (event) {
+        if (event.target === taskModal) closeModal();
+    });
+
+    document.addEventListener("keydown", function (event) {
+        if (event.key === "Escape") closeModal();
+    });
+
+    taskForm.addEventListener("submit", function (event) {
+        event.preventDefault();
+
+        const title = document.getElementById("taskTitle").value.trim();
+        const description = document.getElementById("taskDescription").value.trim();
+        const date = document.getElementById("taskDate").value;
+        const priority = document.getElementById("taskPriority").value;
+
+        if (!title) {
+            showToast("Nama tugas harus diisi.");
+            return;
+        }
+
+        tasks.push({
+            id: Date.now().toString(),
+            title: title,
+            description: description,
+            date: date,
+            priority: priority,
+            completed: false,
+            createdAt: Date.now()
+        });
+
+        saveTasks();
+        renderTasks();
+        closeModal();
+        showToast("Tugas berhasil ditambahkan.");
+    });
+
+    taskList.addEventListener("change", function (event) {
+        const target = event.target;
+        if (target.dataset.action !== "toggle") return;
+
+        const task = tasks.find(function (item) {
+            return item.id === target.dataset.id;
+        });
+
+        if (task) {
+            task.completed = target.checked;
+            saveTasks();
+            renderTasks();
+            showToast(task.completed ? "Tugas ditandai selesai." : "Tugas dibuka kembali.");
+        }
+    });
+
+    taskList.addEventListener("click", function (event) {
+        const button = event.target.closest("button[data-action='delete']");
+        if (!button) return;
+
+        const task = tasks.find(function (item) {
+            return item.id === button.dataset.id;
+        });
+
+        if (!task) return;
+        if (!confirm('Hapus tugas "' + task.title + '"?')) return;
+
+        tasks = tasks.filter(function (item) {
+            return item.id !== button.dataset.id;
+        });
+
+        saveTasks();
+        renderTasks();
+        showToast("Tugas berhasil dihapus.");
+    });
+
+    searchInput.addEventListener("input", renderTasks);
+    priorityFilter.addEventListener("change", renderTasks);
+
+    document.getElementById("resetFilter").addEventListener("click", function () {
+        currentFilter = "all";
+        searchInput.value = "";
+        priorityFilter.value = "all";
+        document.querySelectorAll(".nav-item, .mobile-nav-item").forEach(function (item) {
+            item.classList.toggle("active", item.dataset.view === "tasks" && !item.dataset.filter);
+        });
+        updateView("tasks");
+        renderTasks();
+    });
+
+    function updateView(view) {
+        currentView = view;
+        const isAbout = view === "about";
+        tasksView.hidden = isAbout;
+        aboutView.hidden = !isAbout;
+        document.getElementById("breadcrumbCurrent").textContent = isAbout ? "About Me" : "Semua Tugas";
+
+        document.querySelectorAll(".nav-item, .mobile-nav-item").forEach(function (item) {
+            const itemView = item.dataset.view || "tasks";
+            const isActiveFilter = item.dataset.filter === currentFilter;
+            item.classList.toggle("active", isAbout ? itemView === "about" : itemView === "tasks" && !item.dataset.filter && currentFilter === "all" || isActiveFilter);
+        });
+    }
+
+    document.querySelectorAll(".nav-item, .mobile-nav-item").forEach(function (item) {
+        item.addEventListener("click", function () {
+            if (item.dataset.view === "about") {
+                updateView("about");
+                return;
+            }
+            currentFilter = item.dataset.filter || "all";
+            updateView("tasks");
+            renderTasks();
+        });
+    });
+
+    function setDateAndGreeting() {
+        const now = new Date();
+        document.getElementById("todayLabel").textContent = now.toLocaleDateString("id-ID", {
+            weekday: "long",
+            day: "numeric",
+            month: "long",
+            year: "numeric"
+        }).toUpperCase();
+
+        const hour = now.getHours();
+        let greeting = "Selamat datang";
+        if (hour >= 4 && hour < 11) greeting = "Selamat pagi, selamat datang.";
+        else if (hour >= 11 && hour < 15) greeting = "Selamat siang, selamat datang.";
+        else if (hour >= 15 && hour < 18) greeting = "Selamat sore, selamat datang.";
+        else greeting = "Selamat malam, selamat datang.";
+        document.getElementById("greeting").textContent = greeting;
+        document.getElementById("yearNow").textContent = now.getFullYear();
+    }
+
+    setDateAndGreeting();
+    renderTasks();
+
+    if ("serviceWorker" in navigator && location.protocol !== "file:") {
+        window.addEventListener("load", function () {
+            navigator.serviceWorker.register("sw.js").catch(function () {
+                /* Aplikasi tetap dapat digunakan meskipun service worker gagal. */
+            });
+        });
+    }
+</script>
+</body>
+</html>
